@@ -6,7 +6,7 @@
 	const windowHeight = window.innerHeight
 
 	bubble.textContent = ''
-	const maxHeight = windowHeight - margin * 2
+	const maxHeight = windowHeight - margin * 4
 	bubble.style.setProperty('max-height', `${maxHeight}px`)
 	const fontSize = '24px'
 	bubble.style.setProperty('font-size', fontSize)
@@ -14,27 +14,26 @@
 	shadowRoot.appendChild(bubble)
 	document.body.appendChild(shadowRoot)
 
-	const setUpEventListeners = (sidebar: Element) => {
-		const boxes = sidebar.querySelectorAll('.msg-conversation-listitem__link')
+	const setUpEventListeners = (container: Element) => {
+		const boxes = [...container.children].slice(1, -1)
 		Array.from(boxes).forEach(box => {
-			const textElement = box.querySelector(
-				'.msg-overlay-list-bubble__message-snippet, .msg-overlay-list-bubble__message-snippet--v2'
-			)
+			const textElement = box.querySelector('[data-testid="tweetText"]')
 			const message = textElement?.textContent ?? ''
 
 			// on mouseenter, calculate styles and show bubble
 			box.addEventListener('mouseenter', () => {
 				bubble.textContent = message
-				bubble.style.setProperty('max-width', `400px`)
+				bubble.style.setProperty('max-width', '400px')
 				bubble.style.setProperty('font-size', fontSize)
 
 				const bubbleRect1 = bubble.getBoundingClientRect()
 				const boxRect = box.getBoundingClientRect()
 
-				bubble.style.setProperty('right', `${boxRect.width + margin}px`)
+				const boxRight = boxRect.x + boxRect.width
+				bubble.style.setProperty('left', `${boxRight + margin}px`)
 
-				if (bubbleRect1.height === maxHeight) {
-					bubble.style.setProperty('max-width', `${window.innerWidth - boxRect.width - margin * 2}px`)
+				if (bubbleRect1.height >= maxHeight) {
+					bubble.style.setProperty('max-width', `${window.innerWidth - boxRight - margin * 4}px`)
 					bubble.style.setProperty('top', `${margin}px`)
 
 					// shrink font until bubble fits on screen
@@ -68,64 +67,50 @@
 		})
 	}
 
-	const setUpMouseOver = (sidebar: Element) => {
-		setUpEventListeners(sidebar)
-		const mutationObserver = new MutationObserver(_ => setUpEventListeners(sidebar))
-		mutationObserver.observe(sidebar, { childList: true, subtree: true })
+	const setUpMouseOver = (container: Element) => {
+		setUpEventListeners(container)
+		const mutationObserver = new MutationObserver(_ => setUpEventListeners(container))
+		mutationObserver.observe(container, { childList: true, subtree: true })
 	}
 
-	const findSidebar = (intervalId: number) => {
-		const sidebar = document.querySelector('.msg-overlay-list-bubble__default-conversation-container')
-		if (sidebar) {
-			setUpMouseOver(sidebar)
+	const findContainer = (intervalId?: number) => {
+		const container = document.querySelector('[role="tablist"]')
+		if (container) {
+			setUpMouseOver(container)
 			clearInterval(intervalId)
 		}
 	}
 
-	const setUpSidebarOnHeaderClick = () => {
-		let sidebarCount = 0
-		const sidebarInterval = setInterval(() => {
-			findSidebar(sidebarInterval)
-			sidebarCount++
+	const attachBubble = () => {
+		// check every 10ms, then every 2s, then give up after 20 tries of each
+		let count1 = 0
+		let count2 = 0
+		const intervalId1 = setInterval(() => {
+			findContainer(intervalId1)
+			count1++
 
-			// messages tab is closed
-			if (sidebarCount === 10) {
-				clearInterval(sidebarInterval)
+			if (count1 === 200) {
+				clearInterval(intervalId1)
+
+				const intervalId2 = setInterval(() => {
+					findContainer(intervalId2)
+					count2++
+
+					if (count2 === 20) {
+						clearInterval(intervalId2)
+					}
+				}, 2000)
 			}
-		}, 500)
+		}, 10)
 	}
 
-	let clickHandlerAdded = false
-	const checkForSidebar = (intervalId: number) => {
-		if (!clickHandlerAdded) {
-			const sidebarHeader = document.querySelector('.msg-overlay-bubble-header')
-			if (sidebarHeader) {
-				sidebarHeader.addEventListener('click', setUpSidebarOnHeaderClick, { capture: true })
-				clickHandlerAdded = true
+	attachBubble()
+	// Navigation API is supported in Chrome
+	if ('navigation' in window) {
+		;(window as any).navigation.addEventListener('navigate', (event: Event) => {
+			if ((event as any).destination.url.includes('x.com/messages')) {
+				attachBubble()
 			}
-		}
-
-		findSidebar(intervalId)
+		})
 	}
-
-	// check every 1s, then every 5s, then give up after 20 tries of each
-	let count1 = 0
-	let count2 = 0
-	const intervalId1 = setInterval(() => {
-		checkForSidebar(intervalId1)
-		count1++
-
-		if (count1 === 20) {
-			clearInterval(intervalId1)
-
-			const intervalId2 = setInterval(() => {
-				checkForSidebar(intervalId2)
-				count2++
-
-				if (count2 === 20) {
-					clearInterval(intervalId2)
-				}
-			}, 5000)
-		}
-	}, 1000)
 })()

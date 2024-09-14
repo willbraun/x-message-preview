@@ -14,7 +14,7 @@
 	},
 	"content_scripts": [
 		{
-			"matches": ["https://www.x.com/messages"],
+			"matches": ["https://x.com/*"],
 			"css": ["/styles.css"],
 			"js": ["/dest/content-script.js"]
 		}
