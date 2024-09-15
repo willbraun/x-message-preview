@@ -82,14 +82,14 @@
 	}
 
 	const attachBubble = () => {
-		// check every 10ms, then every 2s, then give up after 20 tries of each
+		// check every 100ms, then every 2s, then give up after 20 tries of each
 		let count1 = 0
 		let count2 = 0
 		const intervalId1 = setInterval(() => {
 			findContainer(intervalId1)
 			count1++
 
-			if (count1 === 200) {
+			if (count1 === 20) {
 				clearInterval(intervalId1)
 
 				const intervalId2 = setInterval(() => {
@@ -101,10 +101,12 @@
 					}
 				}, 2000)
 			}
-		}, 10)
+		}, 100)
 	}
 
-	attachBubble()
+	if (window.location.pathname.includes('/messages')) {
+		attachBubble()
+	}
 	// Navigation API is supported in Chrome
 	if ('navigation' in window) {
 		;(window as any).navigation.addEventListener('navigate', (event: Event) => {
