@@ -2,6 +2,10 @@
 ;
 (function () {
     const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' });
+    const styleLink = document.createElement('link');
+    styleLink.rel = 'stylesheet';
+    styleLink.href = chrome.runtime.getURL('styles.css');
+    shadowRoot.appendChild(styleLink);
     const bubble = document.createElement('div');
     bubble.classList.add('message-preview-bubble');
     const margin = 20;
@@ -14,11 +18,11 @@
     shadowRoot.appendChild(bubble);
     document.body.appendChild(shadowRoot);
     const setUpEventListeners = (container) => {
-        const boxes = [...container.children].slice(1, -1);
+        const boxes = [...container.querySelectorAll('li')];
         Array.from(boxes).forEach(box => {
-            var _a;
-            const textElement = box.querySelector('[data-testid="tweetText"]');
-            const message = (_a = textElement === null || textElement === void 0 ? void 0 : textElement.textContent) !== null && _a !== void 0 ? _a : '';
+            var _a, _b, _c, _d, _e, _f;
+            // get the message text from the nested structure of the box
+            const message = (_f = (_e = (_d = (_c = (_b = (_a = box === null || box === void 0 ? void 0 : box.children[0]) === null || _a === void 0 ? void 0 : _a.children[0]) === null || _b === void 0 ? void 0 : _b.children[0]) === null || _c === void 0 ? void 0 : _c.children[1]) === null || _d === void 0 ? void 0 : _d.children[1]) === null || _e === void 0 ? void 0 : _e.textContent) !== null && _f !== void 0 ? _f : '';
             // on mouseenter, calculate styles and show bubble
             box.addEventListener('mouseenter', () => {
                 bubble.textContent = message;
@@ -63,7 +67,7 @@
         mutationObserver.observe(container, { childList: true, subtree: true });
     };
     const findContainer = (intervalId) => {
-        const container = document.querySelector('[role="tablist"]');
+        const container = document.querySelector('[role="listbox"]');
         if (container) {
             setUpMouseOver(container);
             clearInterval(intervalId);
@@ -88,14 +92,14 @@
             }
         }, 100);
     };
-    if (window.location.pathname.includes('/messages')) {
+    if (window.location.pathname.includes('/i/chat')) {
         attachBubble();
     }
     // Navigation API is supported in Chrome
     if ('navigation' in window) {
         ;
         window.navigation.addEventListener('navigate', (event) => {
-            if (event.destination.url.includes('x.com/messages')) {
+            if (event.destination.url.includes('x.com/i/chat')) {
                 attachBubble();
             }
         });

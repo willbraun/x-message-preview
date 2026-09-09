@@ -1,5 +1,9 @@
 ;(function () {
 	const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' })
+	const styleLink = document.createElement('link')
+	styleLink.rel = 'stylesheet'
+	styleLink.href = chrome.runtime.getURL('styles.css')
+	shadowRoot.appendChild(styleLink)
 	const bubble = document.createElement('div')
 	bubble.classList.add('message-preview-bubble')
 	const margin = 20
@@ -15,10 +19,11 @@
 	document.body.appendChild(shadowRoot)
 
 	const setUpEventListeners = (container: Element) => {
-		const boxes = [...container.children].slice(1, -1)
+		const boxes = [...container.querySelectorAll('li')]
+
 		Array.from(boxes).forEach(box => {
-			const textElement = box.querySelector('[data-testid="tweetText"]')
-			const message = textElement?.textContent ?? ''
+			// get the message text from the nested structure of the box
+			const message = box?.children[0]?.children[0]?.children[0]?.children[1]?.children[1]?.textContent ?? ''
 
 			// on mouseenter, calculate styles and show bubble
 			box.addEventListener('mouseenter', () => {
@@ -74,7 +79,7 @@
 	}
 
 	const findContainer = (intervalId?: number) => {
-		const container = document.querySelector('[role="tablist"]')
+		const container = document.querySelector('[role="listbox"]')
 		if (container) {
 			setUpMouseOver(container)
 			clearInterval(intervalId)
@@ -104,13 +109,13 @@
 		}, 100)
 	}
 
-	if (window.location.pathname.includes('/messages')) {
+	if (window.location.pathname.includes('/i/chat')) {
 		attachBubble()
 	}
 	// Navigation API is supported in Chrome
 	if ('navigation' in window) {
 		;(window as any).navigation.addEventListener('navigate', (event: Event) => {
-			if ((event as any).destination.url.includes('x.com/messages')) {
+			if ((event as any).destination.url.includes('x.com/i/chat')) {
 				attachBubble()
 			}
 		})
