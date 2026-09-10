@@ -1,5 +1,7 @@
 ;(function () {
-	const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' })
+	const shadowHost = document.createElement('div')
+	document.body.appendChild(shadowHost)
+	const shadowRoot = shadowHost.attachShadow({ mode: 'open' })
 	const styleLink = document.createElement('link')
 	styleLink.rel = 'stylesheet'
 	styleLink.href = chrome.runtime.getURL('styles.css')
@@ -16,7 +18,6 @@
 	bubble.style.setProperty('font-size', fontSize)
 
 	shadowRoot.appendChild(bubble)
-	document.body.appendChild(shadowRoot)
 
 	const setUpEventListeners = (container: Element) => {
 		const boxes = [...container.querySelectorAll('li')]

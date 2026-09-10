@@ -5,13 +5,33 @@
 	max-width: 400px;
 	height: fit-content;
 	border-radius: 1rem;
-	background-color: rgb(32, 35, 39);
-	box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
-	color: #e4e4e4;
+	background-color: #fff;
+	box-shadow:
+		0 0 15px rgba(101, 119, 134, 0.2),
+		0 0 3px 1px rgba(101, 119, 134, 0.15);
+	color: rgb(15, 20, 25);
 	z-index: 1000;
 	visibility: hidden;
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-family:
+		TwitterChirp,
+		-apple-system,
+		'system-ui',
+		'Segoe UI',
+		Roboto,
+		Helvetica,
+		Arial,
+		'Apple Color Emoji',
+		'Segoe UI Emoji',
+		'Noto Color Emoji',
+		'Twemoji Mozilla',
+		sans-serif;
 	line-height: 1.15;
+}
+
+:host-context(html[data-theme='dark']) .message-preview-bubble {
+	background-color: rgb(20, 20, 20);
+	box-shadow: 0 0 0px 0 rgba(0, 0, 0, 0);
+	color: #e4e4e4;
 }
 
 .show-bubble {
